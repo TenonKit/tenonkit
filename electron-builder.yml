@@ -1,0 +1,73 @@
+appId: com.tenonkit.app
+productName: Tenonkit
+copyright: Copyright © 2026 Tenonkit
+directories:
+  buildResources: build
+  output: dist
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!{.github,LICENSE,.gitattributes,.editorconfig}'
+  - '!**/*.test.ts'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,bun.lock}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - resources/**
+# Double-clicking a .tenon project or .tenontheme theme opens it in Tenonkit (src/main/open.ts).
+fileAssociations:
+  - ext: tenon
+    name: Tenonkit project
+    description: Tenonkit project
+    role: Editor
+    icon: tenon
+  - ext: tenontheme
+    name: Tenonkit theme
+    description: Tenonkit theme
+    role: Viewer
+    icon: tenontheme
+win:
+  executableName: Tenonkit
+  target:
+    - nsis
+  # Code signing: set CSC_LINK / CSC_KEY_PASSWORD (or azureSignOptions) in the release environment.
+nsis:
+  artifactName: ${productName}-${version}-setup.${ext}
+  # Assisted installer: welcome page, choice of folder, then "Run Tenonkit" on the last page.
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  installerIcon: icon.ico
+  uninstallerIcon: icon.ico
+  installerSidebar: installerSidebar.bmp
+  uninstallerSidebar: installerSidebar.bmp
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  runAfterFinish: true
+  # Projects live in the user's data folder; uninstalling never deletes them.
+  deleteAppDataOnUninstall: false
+mac:
+  category: public.app-category.developer-tools
+  entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  # Set APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID to notarize.
+  notarize: false
+dmg:
+  artifactName: ${productName}-${version}.${ext}
+linux:
+  target:
+    - AppImage
+    - deb
+  maintainer: Tenonkit
+  category: Development
+appImage:
+  artifactName: ${productName}-${version}.${ext}
+npmRebuild: false
+# Auto-updates: point this at where you upload release files (latest.yml + installers).
+publish:
+  provider: generic
+  url: https://tenonkit.com/updates

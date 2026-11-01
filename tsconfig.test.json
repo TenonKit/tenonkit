@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.web.json",
+  "include": ["src/**/*.test.ts", "src/renderer/src/**/*", "src/shared/**/*", "src/preload/*.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "composite": true,
+    "types": ["bun"]
+  }
+}
