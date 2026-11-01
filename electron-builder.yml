@@ -67,7 +67,8 @@ linux:
 appImage:
   artifactName: ${productName}-${version}.${ext}
 npmRebuild: false
-# Auto-updates: point this at where you upload release files (latest.yml + installers).
+# Auto-updates read the latest published GitHub release (the Release workflow attaches latest*.yml).
 publish:
-  provider: generic
-  url: https://tenonkit.com/updates
+  provider: github
+  owner: tenonkit
+  repo: tenonkit
