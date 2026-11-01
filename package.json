@@ -1,6 +1,6 @@
 {
   "name": "tenonkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build websites from components: drag, drop and edit the code.",
   "main": "./out/main/index.js",
   "author": "Tenonkit",

@@ -24,8 +24,9 @@ import TitleBar from './TitleBar'
 import { Button, IconButton } from './ui'
 import { cx } from './styles'
 import { ComponentDef } from '../library'
-import { Block, createProject, initState, Project, reducer } from '../store'
-import { buildHtml, PageOutput, renderProject } from '../render'
+import { Action, Block, createProject, initState, Project, reducer } from '../store'
+import { buildHtml, PageOutput, renderProject, tailwindToCss } from '../render'
+import { usesTailwind } from '../page'
 import { exportReactProject } from '../exportReact'
 import { refreshThumbnail } from '../thumbs'
 import { useSettings } from '../settings'
@@ -90,6 +91,17 @@ export default function Editor({
   const [runtimeError, setRuntimeError] = useState<PreviewError | null>(null)
   const renderDelay = RENDER_DELAY_MS[settings.renderSpeed]
   const { project, selected } = state
+  // A component added to a page without Tailwind gets its Tailwind classes converted into its own CSS.
+  const send = useCallback(
+    (a: Action): void => {
+      if (a.type !== 'add' || usesTailwind(project.css)) return dispatch(a)
+      void tailwindToCss(a.def.code).then((css) => {
+        const merged = [a.def.css.trim(), css].filter(Boolean).join('\n\n')
+        dispatch({ ...a, def: { ...a.def, css: merged } })
+      })
+    },
+    [project.css]
+  )
   const block = project.blocks.find((b) => b.id === selected) ?? null
   const isSite = project.kind === 'site'
   //Picking another component starts from its whole root again.
@@ -463,7 +475,7 @@ export default function Editor({
             blocks={project.blocks}
             selected={selected}
             myComponents={myComponents}
-            dispatch={dispatch}
+            dispatch={send}
           />
         )}
         <div className="flex min-h-0 min-w-0 flex-col gap-2">
@@ -490,7 +502,7 @@ export default function Editor({
               project={project}
               selected={selected}
               device={device}
-              dispatch={dispatch}
+              dispatch={send}
               onKey={onKey}
               output={output}
               editable={isSite}

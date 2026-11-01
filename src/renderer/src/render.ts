@@ -5,7 +5,8 @@ import twPreflight from 'tailwindcss/preflight.css?raw'
 import twUtilities from 'tailwindcss/utilities.css?raw'
 import JsxWorker from './jsx.worker?worker'
 import type { Project } from '../../shared/project'
-import { blockClass, scopedCss, usesTailwind } from './page'
+import { blockClass, nestableTailwind, scopedCss, usesTailwind } from './page'
+import { THEME_TOKENS } from './library'
 
 export type BlockOutput = { html: string; error?: string }
 export type PageOutput = { blocks: Record<string, BlockOutput>; css: string; cssError?: string }
@@ -70,22 +71,39 @@ const SHEETS: Record<string, string> = {
   'tailwindcss/utilities.css': twUtilities
 }
 
+const compileCss = (css: string): Promise<(candidates: string[]) => string> =>
+  compile(css, {
+    base: '/',
+    loadStylesheet: async (id, base) => {
+      const content = SHEETS[id]
+      if (content === undefined)
+        throw new Error(`Can't import "${id}". Only Tailwind's own files can be imported.`)
+      return { path: id, base, content }
+    }
+  }).then((c) => (candidates: string[]) => c.build(candidates))
+
 let compiler: { css: string; build: Promise<(candidates: string[]) => string> } | null = null
 
 function getCompiler(css: string): Promise<(candidates: string[]) => string> {
-  if (compiler?.css !== css) {
-    const build = compile(css, {
-      base: '/',
-      loadStylesheet: async (id, base) => {
-        const content = SHEETS[id]
-        if (content === undefined)
-          throw new Error(`Can't import "${id}". Only Tailwind's own files can be imported.`)
-        return { path: id, base, content }
-      }
-    }).then((c) => (candidates: string[]) => c.build(candidates))
-    compiler = { css, build }
-  }
+  if (compiler?.css !== css) compiler = { css, build: compileCss(css) }
   return compiler.build
+}
+
+// Utilities only, with theme values inlined as var() fallbacks, so the output needs no :root and no preflight.
+const PLAIN = `@import "tailwindcss/theme" theme(reference);
+@import "tailwindcss/utilities";
+${THEME_TOKENS}`
+let plain: Promise<(candidates: string[]) => string> | null = null
+
+/** The CSS for the Tailwind classes in a component's code, for pages that don't use Tailwind. */
+export async function tailwindToCss(code: string): Promise<string> {
+  try {
+    const build = await (plain ??= compileCss(PLAIN))
+    return nestableTailwind(build(candidates([code])))
+  } catch {
+    plain = null
+    return '' // the component still lands, unstyled, as before
+  }
 }
 
 /** Every token that could be a class name. Tailwind ignores the ones that aren't. */

@@ -45,6 +45,17 @@ const CLASSES = `.wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px;
 }
 .btn.alt { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px currentColor; }`
 
+/** Maps the tokens to Tailwind names. Also used to convert Tailwind classes for plain-CSS pages. */
+export const THEME_TOKENS = `@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-soft: var(--soft);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --font-sans: var(--font);
+}`
+
 const indent = (css: string): string => css.replace(/^/gm, '  ')
 
 /** The page CSS a new project starts with: design tokens, base styles and .wrap/.btn. */
@@ -62,15 +73,7 @@ ${CLASSES}
 ${TOKENS}
 
 /* Tailwind classes can use the tokens: bg-brand, text-ink, bg-soft, font-sans… */
-@theme inline {
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
-  --color-soft: var(--soft);
-  --color-muted: var(--muted);
-  --color-brand: var(--brand);
-  --color-brand-ink: var(--brand-ink);
-  --font-sans: var(--font);
-}
+${THEME_TOKENS}
 
 @layer base {
 ${indent(ELEMENTS)}
